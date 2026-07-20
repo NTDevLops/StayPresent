@@ -1,11 +1,38 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "staypresent"
 version = "1.0.0"
-description = "Keep your bot alive with a tiny web server."
+description = "Run your Python bot alongside a lightweight Flask web server."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+  { name = "Ashish Sharma as NTDevLops" }
+]
+requires-python = ">=3.8"
+
 dependencies = [
-    "flask"
+    "Flask>=3.0.0"
 ]
 
-[build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+keywords = [
+    "flask",
+    "telegram",
+    "discord",
+    "bot",
+    "webserver",
+    "keepalive"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+[project.urls]
+Homepage = "https://github.com/NTDevLops/staypresent"
+Repository = "https://github.com/NTDevLops/staypresent"
+Issues = "https://github.com/NTDevLops/staypresent/issues"
