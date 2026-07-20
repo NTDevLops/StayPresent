@@ -1,4 +1,11 @@
-# StayPresent
+<h1 align="center">StayPresent</h1>
+<p align="center">
+  <a href="https://github.com/NTDevLops/StayPresent/">
+    <img src="https://i.ibb.co/WNzhLjQn/Stay-Present-1.png" alt="StayPresent Logo" height="150">
+  </a>
+</p>
+
+### 🛖 About
 
 A lightweight Python package designed to keep your bots and background scripts alive by running a dedicated Flask web server alongside your main application.
 
