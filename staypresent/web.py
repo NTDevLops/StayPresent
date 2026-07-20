@@ -1,12 +1,25 @@
-_response = "StayPresent"
+import threading
+from typing import Any, Union
 
-def text(message: str):
+_lock = threading.Lock()
+_response: Union[str, dict, list] = "StayPresent"
+
+
+def text(message: str) -> None:
+    """Set a plain-text response for the web server to return."""
     global _response
-    _response = str(message)
+    with _lock:
+        _response = str(message)
 
-def json(data):
+
+def json(data: Any) -> None:
+    """Set a JSON-serializable response (dict/list) for the web server to return."""
     global _response
-    _response = data
+    with _lock:
+        _response = data
 
-def get():
-    return _response
+
+def get() -> Union[str, dict, list]:
+    """Return whatever response is currently configured."""
+    with _lock:
+        return _response

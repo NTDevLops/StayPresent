@@ -163,6 +163,12 @@ staypresent.web.json({
 
 ---
 
+### Health Check
+
+A `/health` endpoint is always available alongside your custom `/` response, returning `{"status": "ok"}`. Useful for platforms that want a dedicated health-check path separate from your custom response.
+
+---
+
 ## Requirements
 
 - Python 3.8+
