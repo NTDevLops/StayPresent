@@ -1,0 +1,11 @@
+[project]
+name = "staypresent"
+version = "1.0.0"
+description = "Keep your bot alive with a tiny web server."
+dependencies = [
+    "flask"
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
