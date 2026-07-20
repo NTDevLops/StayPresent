@@ -1,61 +1,63 @@
 # StayPresent
 
-A lightweight Python package that keeps your bot or script alive by running a small Flask web server alongside your application.
+A lightweight Python package designed to keep your bots and background scripts alive by running a dedicated Flask web server alongside your main application.
 
-Perfect for platforms like **Render**, **Railway**, **Koyeb**, **Heroku**, or anywhere an HTTP server is required to keep your service active.
-
----
-
-## Features
-
-- 🚀 One-line setup
-- 🌐 Built-in Flask web server
-- 🤖 Runs your Python bot/script automatically
-- 📄 Custom text response
-- 📦 JSON response support
-- ⚡ Lightweight and easy to use
+Perfect for deploying on platforms like **Render**, **Railway**, **Koyeb**, **Heroku**, or any host that requires an active HTTP port to keep your service running.
 
 ---
 
-## Installation
+## 🚀 Features
+
+* **Zero-Friction Setup:** Get running with just one line of code.
+* **Production-Ready by Default:** Automatically detects and uses `waitress` to avoid Flask's "development server" warnings.
+* **Auto-Restarts & Crash Recovery:** Automatically respawns your bot process if it crashes, complete with customizable delays and max-restart limits.
+* **Flexible Responses:** Serve custom plain text, JSON (default), or full HTML templates.
+* **Static Asset Serving:** Automatically serves CSS, JS, and images located next to your HTML templates.
+* **Advanced Control:** Easily pass custom command-line arguments and environment variables directly to your bot process.
+* **Fail-Safe Logging:** Logs a clear error if the underlying web server dies unexpectedly.
+
+---
+
+## 📦 Installation
+
+Install via pip:
 
 ```bash
 pip install staypresent
+
 ```
 
-Or install locally:
+**Recommended for Production:**
+To automatically use a production WSGI server and suppress Flask development warnings, install the `prod` extra. This pulls in [`waitress`](https://pypi.org/project/waitress/).
 
 ```bash
-pip install .
+pip install staypresent[prod]
+
 ```
+
+*(Note: If `waitress` isn't installed, StayPresent gracefully falls back to Flask's built-in development server and logs a one-time warning.)*
 
 ---
 
-## Basic Usage
+## 💻 Usage Guide
+
+### Basic Usage (Text Response)
 
 ```python
 import staypresent
 
 staypresent.web.text("Made With ❤️")
-
 staypresent.run("bot.py")
-```
-
-Open your browser:
 
 ```
-http://localhost:8080
-```
 
-Response:
+*Navigating to `http://localhost:8080` will return plain text: `Made With ❤️*`
 
-```
-Made With ❤️
-```
+> **Note:** If you don't configure a response, StayPresent defaults to a JSON response of `{"message": "I'm Present"}` at the root `/` route.
 
----
+### JSON Response
 
-## JSON Response
+A safe copy of your dictionary is stored. If you need to update live data, just call `staypresent.web.json()` again.
 
 ```python
 import staypresent
@@ -67,132 +69,110 @@ staypresent.web.json({
 })
 
 staypresent.run("bot.py")
+
 ```
 
-Response
+### HTML Response (with Static Files)
 
-```json
-{
-  "status": "online",
-  "developer": "John",
-  "message": "Made With Love ❤️"
-}
-```
-
----
-
-## Custom Port
+Serve a full HTML page. The file is read fresh on every request, allowing you to edit your HTML on disk without restarting your bot.
 
 ```python
 import staypresent
 
-staypresent.run(
-    "bot.py",
-    port=5000
-)
+# The path is validated immediately and will raise a FileNotFoundError if missing
+staypresent.web.html("template/index.html")
+staypresent.run("bot.py")
+
 ```
 
----
+**Serving Static Assets:**
+Any files (CSS, JS, images) in the same directory as your HTML file are automatically served. Path traversal is strictly blocked for security.
 
-## Custom Host
+```html
+<!-- template/index.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Bot</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <h1>I'm alive!</h1>
+    <img src="images/logo.png">
+  </body>
+</html>
 
-```python
-staypresent.run(
-    "bot.py",
-    host="0.0.0.0"
-)
 ```
 
----
-
-## Complete Example
+### Custom Host, Port, and Threads (Complete Example)
 
 ```python
 import staypresent
 
 staypresent.web.json({
     "status": "Running",
-    "version": "1.0.0",
-    "message": "Made With Love ❤️"
+    "version": "1.0.0"
 })
 
 staypresent.run(
-    "body.py",
+    "bot.py",
     host="0.0.0.0",
-    port=8080
+    port=8080,
+    threads=8  # Increase if receiving real web traffic
 )
+
 ```
 
 ---
 
-## API
+## ⚙️ API Reference
 
-### Run your bot
+### `staypresent.run(...)`
 
-```python
-staypresent.run(
-    bot_file,
-    host="0.0.0.0",
-    port=8080
-)
-```
+Launch your bot script alongside the web server.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `bot_file` | str | Path to your Python script |
-| `host` | str | Flask host |
-| `port` | int | Flask port |
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `bot_file` | `str` | **Required** | Path to the Python script to run alongside the server. |
+| `host` | `str` | `"0.0.0.0"` | Host to bind the web server to. |
+| `port` | `int` | `8080` | Port to bind the web server to. |
+| `production` | `bool` | `True` | Uses `waitress` if installed. Set to `False` to force the Flask dev server. |
+| `threads` | `int` | `4` | Number of worker threads for `waitress`. Increase this if serving real web traffic rather than just keep-alive pings. *(Requires `production=True` and `waitress`)*. |
+| `restart_on_crash` | `bool` | `True` | Relaunch the bot process if it exits with a non-zero exit code. |
+| `max_restarts` | `int` | `5` | Maximum restart attempts after a crash before giving up. |
+| `restart_delay` | `float` | `2.0` | Seconds to wait before relaunching the bot process after a crash. |
+| `restart_reset_after` | `float` | `60.0` | Seconds the bot must stay alive to reset the consecutive crash counter back to 0. |
+| `bot_args` | `list` | `None` | Extra command-line arguments to pass to `bot_file` (e.g., `["--verbose"]`). |
+| `env` | `dict` | `None` | Extra environment variables for the bot process. Merges over the current environment. |
 
----
+### Crash Recovery Details
 
-### Plain Text Response
+StayPresent automatically monitors your bot process. If it exits with a non-zero exit code, StayPresent restarts it based on your configuration:
 
-```python
-staypresent.web.text("Hello World")
-```
+* **Clean Exits:** An exit code of `0` is considered intentional and will *not* trigger a restart.
+* **Manual Shutdowns:** Stopping StayPresent via `Ctrl+C` (SIGINT) or `SIGTERM` shuts down both the server and the bot cleanly.
+* **Smart Counters:** The `max_restarts` limit applies to *consecutive* crashes. If your bot runs successfully for the duration of `restart_reset_after` (default 60 seconds), the crash counter resets.
 
----
+### Built-in Health Check
 
-### JSON Response
-
-```python
-staypresent.web.json({
-    "hello": "world"
-})
-```
+A dedicated `/health` endpoint is automatically exposed, returning `{"status": "ok"}`. This is incredibly useful for platform pingers and uptime monitors that require a dedicated health-check path separate from your root `/` response.
 
 ---
 
-### Health Check
+## 🛠 Requirements
 
-A `/health` endpoint is always available alongside your custom `/` response, returning `{"status": "ok"}`. Useful for platforms that want a dedicated health-check path separate from your custom response.
+* Python 3.8+
+* Flask
+* `waitress` *(optional, but highly recommended for production)*
 
----
+## 💡 Use Cases
 
-## Requirements
-
-- Python 3.8+
-- Flask
-
----
-
-## Use Cases
-
-- Telegram Bots
-- Discord Bots
-- Automation Scripts
-- Background Workers
-- Render Deployments
-- Railway Deployments
-- Koyeb Deployments
-- Heroku Apps
+* Discord & Telegram Bots
+* Background Workers & Automation Scripts
+* Keeping deployments alive on Render, Railway, Koyeb, and Heroku
 
 ---
 
-## License
+**License:** MIT License
 
-MIT License
-
----
-
-Made with ❤️ using Python.
+*Made with ❤️ using Python.*

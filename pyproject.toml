@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "staypresent"
-version = "1.0.4"
-description = "Run your Python bot alongside a lightweight Flask web server."
+version = "1.2.0"
+description = "Keep your Python bots alive with a zero-config, production-ready background web server."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
@@ -13,23 +13,56 @@ authors = [
 ]
 requires-python = ">=3.8"
 
-dependencies = [
-    "Flask>=3.0.0"
-]
-
+# Keywords and Classifiers MUST come before any [project.something] subtables
 keywords = [
+    # Core concepts
     "flask",
-    "telegram",
-    "discord",
-    "bot",
     "webserver",
-    "keepalive"
+    "keepalive",
+    "bot",
+    
+    # Target integrations
+    "telegram-bot",
+    "discord-bot",
+    "automation",
+    "background-worker",
+    
+    # Target deployment platforms
+    "render",
+    "heroku",
+    "railway",
+    "koyeb",
+    
+    # Technical features
+    "waitress",
+    "wsgi",
+    "auto-restart",
+    "crash-recovery",
+    "hosting",
+    "deployment"
 ]
 
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent"
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Server",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+dependencies = [
+    "Flask>=3.0.0"
+]
+
+[project.optional-dependencies]
+prod = [
+    "waitress>=2.1.2"
 ]
 
 [project.urls]
