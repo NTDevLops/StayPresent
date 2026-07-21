@@ -31,6 +31,10 @@ Perfect for deploying on platforms like **Render**, **Railway**, **Koyeb**, **He
 
 ---
 
+> 📖 **Full Documentation:** For complete documentation, API reference, deployment guides, and FAQs, open [DOCUMENTATION.md](https://github.com/NTDevLops/StayPresent/blob/main/DOCUMENTATION.md).
+
+---
+
 ## 🚀 Features
 
 * **Zero-Friction Setup:** Get running with just one line of code.

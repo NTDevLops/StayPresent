@@ -218,7 +218,14 @@ def run(
         logger.error("Web server failed to start on %s:%s -> %s", host, port, error_holder[0])
         raise error_holder[0]
 
-    logger.info("Web server running on %s:%s", host, port)
+    if port == 0:
+        logger.info(
+            "Web server running on %s (port 0 requested - the OS assigned a free "
+            "port; check the server's own startup output above for the actual port).",
+            host,
+        )
+    else:
+        logger.info("Web server running on %s:%s", host, port)
 
     bot_cmd = [sys.executable, bot_file] + list(bot_args or [])
     bot_env = {**os.environ, **{k: str(v) for k, v in env.items()}} if env else None
@@ -280,7 +287,11 @@ def run(
 
     threading.Thread(target=_watch_server_thread, daemon=True).start()
 
-    process = _launch_bot()
+    try:
+        process = _launch_bot()
+    except OSError as exc:
+        logger.error("Failed to launch bot process '%s': %s", bot_file, exc)
+        raise
     process_started_at = time.monotonic()
 
     restarts = 0
@@ -327,5 +338,19 @@ def run(
             max_restarts,
         )
         time.sleep(restart_delay)
-        process = _launch_bot()
+        try:
+            process = _launch_bot()
+        except OSError as exc:
+            # The OS itself refused to spawn the process (out of file
+            # descriptors/memory, a process-count ulimit, etc) - this is
+            # distinct from the bot starting and then crashing, which is
+            # handled above. Give up cleanly with a clear log message and a
+            # non-zero exit instead of letting this exception escape
+            # unhandled and take down the whole recovery loop with a raw
+            # traceback.
+            logger.error(
+                "Failed to relaunch bot process after crash (attempt %s/%s): %s. Giving up.",
+                restarts, max_restarts, exc,
+            )
+            sys.exit(1)
         process_started_at = time.monotonic()
