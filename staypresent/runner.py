@@ -22,6 +22,22 @@ if not logger.handlers:
     logger.propagate = False
 
 
+def _to_process_exit_code(returncode: int) -> int:
+    """
+    Normalize a subprocess.Popen.returncode into a value safe to pass to
+    sys.exit(). When a process is killed by a signal, Popen reports that as
+    a *negative* returncode (e.g. -9 for SIGKILL) rather than the POSIX
+    "128 + signal number" convention shells, Docker, and Kubernetes use
+    (e.g. 137 for SIGKILL/OOM-kill). Passing a negative number straight to
+    sys.exit() doesn't raise that convention either - sys.exit(-9) actually
+    exits with 247, not 137 - so tooling matching on the standard codes
+    would misread it. This converts -N back to the conventional 128 + N.
+    """
+    if returncode < 0:
+        return 128 - returncode
+    return returncode
+
+
 def _serve_with_waitress(host: str, port: int, threads: int) -> bool:
     """
     Try to serve the app with waitress, a production-grade WSGI server.
@@ -285,7 +301,7 @@ def run(
 
         if not restart_on_crash:
             logger.warning("Bot process exited with code %s. Restarts are disabled.", exit_code)
-            sys.exit(exit_code)
+            sys.exit(_to_process_exit_code(exit_code))
 
         if uptime >= restart_reset_after and restarts > 0:
             logger.info(
@@ -300,7 +316,7 @@ def run(
                 exit_code,
                 max_restarts,
             )
-            sys.exit(exit_code)
+            sys.exit(_to_process_exit_code(exit_code))
 
         restarts += 1
         logger.warning(
