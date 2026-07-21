@@ -147,6 +147,23 @@ def run(
             f"staypresent.run(): bot file '{bot_file}' does not exist or is not a file."
         )
 
+    if not (0 <= port <= 65535):
+        raise ValueError(f"staypresent.run(): port must be between 0 and 65535, got {port}.")
+    if threads < 1:
+        # threads=0 doesn't error out anywhere - waitress just accepts
+        # connections and never services them, so the server looks "up"
+        # (health checks on the TCP level pass) but every request hangs
+        # forever. That silent failure is worse than refusing outright.
+        raise ValueError(f"staypresent.run(): threads must be at least 1, got {threads}.")
+    if max_restarts < 0:
+        raise ValueError(f"staypresent.run(): max_restarts must be >= 0, got {max_restarts}.")
+    if restart_delay < 0:
+        raise ValueError(f"staypresent.run(): restart_delay must be >= 0, got {restart_delay}.")
+    if restart_reset_after < 0:
+        raise ValueError(
+            f"staypresent.run(): restart_reset_after must be >= 0, got {restart_reset_after}."
+        )
+
     started_event = threading.Event()
     error_holder = []
 

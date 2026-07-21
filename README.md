@@ -169,6 +169,8 @@ Launch your bot script alongside the web server.
 | `bot_args` | `list` | `None` | Extra command-line arguments to pass to `bot_file` (e.g., `["--verbose"]`). |
 | `env` | `dict` | `None` | Extra environment variables for the bot process. Merges over the current environment. |
 
+> **Note:** `port`, `threads`, `max_restarts`, `restart_delay`, and `restart_reset_after` are validated up front — passing an invalid value (e.g. `threads=0`, a negative `port`) raises a `ValueError` immediately instead of failing silently or deep inside `waitress`.
+
 ### Crash Recovery Details
 
 StayPresent automatically monitors your bot process. If it exits with a non-zero exit code, StayPresent restarts it based on your configuration:
