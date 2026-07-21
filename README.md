@@ -247,6 +247,7 @@ StayPresent automatically monitors your bot process. If it exits with a non-zero
 * **Clean Exits:** An exit code of `0` is considered intentional and will *not* trigger a restart.
 * **Manual Shutdowns:** Stopping StayPresent via `Ctrl+C` (SIGINT) or `SIGTERM` shuts down both the server and the bot cleanly.
 * **Smart Counters:** The `max_restarts` limit applies to *consecutive* crashes. If your bot runs successfully for the duration of `restart_reset_after` (default 60 seconds), the crash counter resets.
+* **Non-Zero Exit on Giving Up:** If the bot ultimately fails to stay up — restarts disabled and it crashed, or `max_restarts` was exhausted — `staypresent.run()` exits the whole process with the bot's last exit code instead of returning normally. This lets a hosting platform's own restart-on-crash policy (Render, Railway, Docker, systemd, etc.) kick in as a last resort, instead of the process quietly exiting `0` as if nothing went wrong.
 
 ### Built-in Health Check
 

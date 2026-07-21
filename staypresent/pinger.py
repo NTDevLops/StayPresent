@@ -34,16 +34,18 @@ def _build_url(host: str, port: int = None, path: str = "/", https: bool = None)
         raise TypeError(f"staypresent.ping()/cron(): 'host' must be a str, got {type(host).__name__}.")
     if port is not None and not isinstance(port, int):
         raise TypeError(f"staypresent.ping()/cron(): 'port' must be an int, got {type(port).__name__}.")
+    if not isinstance(path, str):
+        raise TypeError(f"staypresent.ping()/cron(): 'path' must be a str, got {type(path).__name__}.")
     if not host or not host.strip():
         raise ValueError("staypresent.ping()/cron(): 'host' is required.")
     host = host.strip()
 
     # Already a full URL (e.g. "https://google.com" or "http://1.2.3.4:9000/x")
     if "://" in host:
-        if port is not None or (path and path != "/"):
+        if port is not None or (path and path != "/") or https is not None:
             logger.warning(
                 "staypresent.ping()/cron(): 'host' is already a full URL (%s) - "
-                "the 'port'/'path' arguments are ignored.",
+                "the 'port'/'path'/'https' arguments are ignored.",
                 host,
             )
         return host

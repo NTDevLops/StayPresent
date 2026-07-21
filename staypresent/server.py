@@ -5,7 +5,17 @@ from werkzeug.exceptions import NotFound
 
 from . import web
 
-app = Flask(__name__)
+
+# static_folder=None disables Flask's own built-in "/static/<path:filename>"
+# route. StayPresent doesn't ship any static assets of its own - but if left
+# enabled, that built-in route silently shadows our own static_files() route
+# below for any request path starting with "static/", which is the single
+# most common naming convention for an assets folder (e.g. an HTML file that
+# links to "static/style.css" or "static/logo.png" right next to it). With
+# the built-in route active, those requests 404 against Flask's nonexistent
+# default static folder instead of ever reaching static_files(), which knows
+# how to correctly serve them from next to the user's HTML file.
+app = Flask(__name__, static_folder=None)
 
 
 @app.route("/")

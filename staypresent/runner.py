@@ -109,6 +109,15 @@ def run(
     is treated as intentional and is not restarted. Restarts do not apply
     when you stop StayPresent yourself (Ctrl+C / SIGTERM).
 
+    If the bot ultimately fails to stay up - either `restart_on_crash` is
+    False and it exits non-zero, or `max_restarts` is exhausted - this
+    function calls `sys.exit()` with the bot's last exit code instead of
+    returning normally. This makes sure the wrapping process itself exits
+    non-zero, so a hosting platform's own restart-on-crash policy (Render,
+    Railway, Docker, systemd, etc.) can kick in as a last resort; otherwise
+    the process would exit 0 looking "successful" despite the bot having
+    failed.
+
     Args:
         bot_file: Path to the Python script to run alongside the server.
         host: Host to bind the web server to.
@@ -276,7 +285,7 @@ def run(
 
         if not restart_on_crash:
             logger.warning("Bot process exited with code %s. Restarts are disabled.", exit_code)
-            break
+            sys.exit(exit_code)
 
         if uptime >= restart_reset_after and restarts > 0:
             logger.info(
@@ -291,7 +300,7 @@ def run(
                 exit_code,
                 max_restarts,
             )
-            break
+            sys.exit(exit_code)
 
         restarts += 1
         logger.warning(
