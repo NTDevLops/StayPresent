@@ -8,12 +8,18 @@ import os
 
 from .server import app
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(message)s",
-)
-
 logger = logging.getLogger("staypresent")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    # Attach our own handler to the "staypresent" logger only, instead of
+    # calling logging.basicConfig() (which configures the *root* logger).
+    # A library touching the root logger can silently clobber, duplicate,
+    # or reformat log output the host script/bot has already set up for
+    # its own unrelated loggers.
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s | %(levelname)-8s | %(message)s"))
+    logger.addHandler(_handler)
+    logger.propagate = False
 
 
 def _serve_with_waitress(host: str, port: int, threads: int) -> bool:
@@ -175,9 +181,13 @@ def run(
         proc_holder["process"] = p
         return p
 
-    def shutdown(*args):
+    def shutdown(signum, frame):
         stopping.set()
-        logger.info("Stopping...")
+        try:
+            sig_name = signal.Signals(signum).name
+        except ValueError:
+            sig_name = str(signum)
+        logger.info("Received %s, stopping...", sig_name)
         proc = proc_holder["process"]
         if proc is not None:
             proc.terminate()
