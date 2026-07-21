@@ -163,6 +163,18 @@ def run(
         raise ValueError(
             f"staypresent.run(): restart_reset_after must be >= 0, got {restart_reset_after}."
         )
+    if bot_args is not None and isinstance(bot_args, str):
+        # A very easy mistake to make - list("--flag") silently explodes into
+        # ['-', '-', 'f', 'l', 'a', 'g'] instead of raising anything, so the
+        # bot process gets launched with garbage argv and no indication why.
+        raise TypeError(
+            "staypresent.run(): bot_args must be a list of strings, not a bare string. "
+            f'Did you mean bot_args=["{bot_args}"]?'
+        )
+    if bot_args is not None and not isinstance(bot_args, (list, tuple)):
+        raise TypeError(f"staypresent.run(): bot_args must be a list, got {type(bot_args).__name__}.")
+    if env is not None and not isinstance(env, dict):
+        raise TypeError(f"staypresent.run(): env must be a dict, got {type(env).__name__}.")
 
     started_event = threading.Event()
     error_holder = []

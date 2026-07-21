@@ -23,6 +23,7 @@ Perfect for deploying on platforms like **Render**, **Railway**, **Koyeb**, **He
 - [Features](#-features)
 - [Installation](#-installation)
 - [Usage Guide](#-usage-guide)
+- [Self-Ping / Keep-Warm](#-self-ping--keep-warm)
 - [API Reference](#️-api-reference)
 - [Logging](#-logging)
 - [Requirements](#-requirements)
@@ -39,6 +40,7 @@ Perfect for deploying on platforms like **Render**, **Railway**, **Koyeb**, **He
 * **Static Asset Serving:** Automatically serves CSS, JS, and images located next to your HTML templates.
 * **Advanced Control:** Easily pass custom command-line arguments and environment variables directly to your bot process.
 * **Fail-Safe Logging:** Logs a clear error if the underlying web server dies unexpectedly.
+* **Optional Self-Ping / Keep-Warm:** Periodically ping your own public URL in the background to prevent free-tier hosts from spinning your service down due to inactivity — fully opt-in, off by default.
 
 ---
 
@@ -149,7 +151,74 @@ staypresent.run(
 
 ---
 
-## ⚙️ API Reference
+## 📡 Self-Ping / Keep-Warm
+
+Some free hosting tiers (Render, Railway, Replit, etc.) spin your service down after a period of inactivity, and only wake it back up on the next incoming request. `staypresent.ping()` and `staypresent.cron()` are a completely optional way to work around this by having your app periodically hit its own **public** URL — nothing runs unless you call one of them yourself.
+
+> ⚠️ **Ping your public URL, not `127.0.0.1`/`0.0.0.0`.** Traffic that never leaves the machine doesn't count as activity to the hosting platform. `staypresent.cron("https://your-app.onrender.com")` works for that; `staypresent.cron("0.0.0.0", port=8080)` is only useful for locally smoke-testing that your own server is responding.
+
+### `staypresent.ping(...)` — one-off check
+
+Synchronous — fires a single HTTP GET and returns immediately with the result.
+
+```python
+result = staypresent.ping("https://my-app.onrender.com")
+# -> {"url": "...", "ok": True, "status_code": 200, "elapsed": 0.31, "error": None}
+
+if not result["ok"]:
+    print("Something's wrong:", result["error"])
+```
+
+### `staypresent.cron(...)` — repeat on a schedule
+
+Non-blocking — starts a background thread that calls `ping()` on a schedule. Call it before `staypresent.run()`.
+
+```python
+import staypresent
+
+# Ping our own public URL every 4 minutes to keep the free-tier instance awake
+staypresent.cron("https://my-app.onrender.com", interval=240)
+
+staypresent.run("bot.py")
+```
+
+With callbacks, e.g. to log failures somewhere more visible:
+
+```python
+staypresent.cron(
+    "https://my-app.onrender.com",
+    interval=240,
+    on_success=lambda r: print(f"warm ping ok ({r['elapsed']}s)"),
+    on_failure=lambda r: print(f"warm ping failed: {r['error']}"),
+)
+```
+
+`host` accepts a bare domain (`"my-app.onrender.com"`), a full URL (`"https://my-app.onrender.com/health"`), or a local bind address (`"0.0.0.0"`, treated as `127.0.0.1`) — same rules for both `ping()` and `cron()`.
+
+`cron()` returns a handle if you ever need to cancel it:
+
+```python
+handle = staypresent.cron("https://my-app.onrender.com", interval=240)
+...
+handle.stop()          # stop pinging
+handle.is_running       # True/False
+```
+
+Starting and stopping are both logged (`Started cron: pinging ... every 240s`), so you can confirm it's actually active. Pings run one at a time — if a ping takes a while to time out, the actual gap before the next one grows accordingly rather than piling up requests in parallel.
+
+| Parameter | Type | Default | Description |
+| --- | --- | --- | --- |
+| `host` | `str` | **Required** | Bare domain, full URL, or bind address (see above). |
+| `port` | `int` | `None` | Port to connect to. Ignored if `host` is already a full URL. |
+| `path` | `str` | `"/"` | Path to request. Ignored if `host` is already a full URL. |
+| `timeout` | `float` | `10.0` | Seconds to wait for a response before treating the ping as failed. |
+| `https` | `bool` | `None` | Force `http`/`https`. Auto-detected by default (local addresses → `http`, everything else → `https`). |
+| `interval` *(cron only)* | `float` | `300.0` | Seconds between pings. |
+| `repeat` *(cron only)* | `bool` | `True` | Keep pinging forever, or just once in the background. |
+| `on_success` *(cron only)* | `callable` | `None` | `fn(result)` called after each successful ping. |
+| `on_failure` *(cron only)* | `callable` | `None` | `fn(result)` called after each failed ping. |
+
+---
 
 ### `staypresent.run(...)`
 
@@ -166,7 +235,7 @@ Launch your bot script alongside the web server.
 | `max_restarts` | `int` | `5` | Maximum restart attempts after a crash before giving up. |
 | `restart_delay` | `float` | `2.0` | Seconds to wait before relaunching the bot process after a crash. |
 | `restart_reset_after` | `float` | `60.0` | Seconds the bot must stay alive to reset the consecutive crash counter back to 0. |
-| `bot_args` | `list` | `None` | Extra command-line arguments to pass to `bot_file` (e.g., `["--verbose"]`). |
+| `bot_args` | `list` | `None` | Extra command-line arguments to pass to `bot_file` (e.g., `["--verbose"]`). Must be a list — a bare string like `"--flag"` raises a clear error instead of silently exploding into individual characters. |
 | `env` | `dict` | `None` | Extra environment variables for the bot process. Merges over the current environment. |
 
 > **Note:** `port`, `threads`, `max_restarts`, `restart_delay`, and `restart_reset_after` are validated up front — passing an invalid value (e.g. `threads=0`, a negative `port`) raises a `ValueError` immediately instead of failing silently or deep inside `waitress`.
