@@ -1,13 +1,30 @@
 <h1 align="center">StayPresent</h1>
 <p align="center">
   <a href="https://github.com/NTDevLops/StayPresent/">
-    <img src="https://i.ibb.co/WNzhLjQn/Stay-Present-1.png" alt="StayPresent Logo" height="150">
+    <img src="https://i.ibb.co/nXKNzwf/Stay-Present-2.png" alt="StayPresent Logo" height="225">
   </a>
 </p>
 <p align="center">
-  <a href="https://pypi.org/project/staypresent/"><img src="https://img.shields.io/pypi/v/staypresent.svg" alt="PyPI version"></a>
-  <a href="https://pypi.org/project/staypresent/"><img src="https://img.shields.io/pypi/pyversions/staypresent.svg" alt="Python versions"></a>
-  <a href="https://github.com/NTDevLops/StayPresent/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT"></a>
+  <a href="https://pypi.org/project/staypresent/">
+    <img src="https://img.shields.io/pypi/v/staypresent.svg" alt="PyPI version">
+  </a>
+  <a href="https://pypi.org/project/staypresent/">
+    <img src="https://img.shields.io/pypi/pyversions/staypresent.svg" alt="Python versions">
+  </a>
+  <a href="https://github.com/NTDevLops/StayPresent/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License: MIT">
+  </a>
+</p>
+<p align="center">
+  <a href="https://pypi.org/project/staypresent/">
+    <img src="https://static.pepy.tech/personalized-badge/staypresent?period=weekly&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=RED&left_text=downloads%2Fweek" alt="Downloads per week">
+  </a>
+  <a href="https://pypi.org/project/staypresent/">
+    <img src="https://static.pepy.tech/personalized-badge/staypresent?period=monthly&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=RED&left_text=downloads%2Fmonth" alt="Downloads per month">
+  </a>
+  <a href="https://pypi.org/project/staypresent/">
+    <img src="https://static.pepy.tech/personalized-badge/staypresent?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=RED&left_text=downloads" alt="Total downloads">
+  </a>
 </p>
 
 ### 🛖 About

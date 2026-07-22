@@ -185,10 +185,10 @@ staypresent.run("bot.py")
 | `path` | `str` | `"/"` | Target endpoint path. Ignored if a full URL is provided. |
 | `timeout` | `float` | `10.0` | HTTP timeout threshold in seconds. |
 | `https` | `bool` | `None` | Forces protocol. Auto-detected if unassigned. |
-| `interval` | `float` | `300.0` | Frequency of requests in seconds. |
-| `repeat` | `bool` | `True` | Dictates continuous execution vs. a single background execution. |
-| `on_success` | `callable` | `None` | Callback function invoked post-successful ping. |
-| `on_failure` | `callable` | `None` | Callback function invoked upon request timeout or failure. |
+| `interval` *(cron only)* | `float` | `300.0` | Frequency of requests in seconds. |
+| `repeat` *(cron only)* | `bool` | `True` | Dictates continuous execution vs. a single background execution. |
+| `on_success` *(cron only)* | `callable` | `None` | Callback function invoked post-successful ping. |
+| `on_failure` *(cron only)* | `callable` | `None` | Callback function invoked upon request timeout or failure. |
 
 ---
 
